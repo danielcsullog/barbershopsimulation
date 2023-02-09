@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BarberShopSimulation {
+
     //SIMULATION SETTINGS
     public static final int ONE_HOUR_IN_MS = 400;
     public static final int START_WORKING_HOUR = 9;         //9:00
@@ -18,9 +19,9 @@ public class BarberShopSimulation {
     public static AtomicBoolean weekIsOver;
 
     public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();    //Check the simulation time (24*400 ms + xy = ~ 48000 ms)
-        Barber barber = new Barber();
+        long startTime = System.currentTimeMillis();
         weekIsOver = new AtomicBoolean(false);
+        Barber barber = new Barber();
 
         final ScheduledExecutorService dailyScheduler = Executors.newScheduledThreadPool(1);
 

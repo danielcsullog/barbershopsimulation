@@ -11,14 +11,14 @@ public class Barber implements Runnable {
     public AtomicBoolean needToWork;
     public BlockingQueue<Customer> queue;
 
-    //Statistics
+    // Statistics
     public AtomicInteger servedCustomers;
     public AtomicInteger overCapacityCustomers;
     public AtomicInteger closedBarberCustomers;
     public AtomicLong allWaitingTime;
     public long averageWaitingTime;
 
-    public Barber(){
+    public Barber() {
         needToWork = new AtomicBoolean(false);
         queue = new LinkedBlockingQueue<>(BarberShopSimulation.MAX_QUEUE_CAPACITY);
 
@@ -30,19 +30,17 @@ public class Barber implements Runnable {
 
     @Override
     public void run() {
-        while(!BarberShopSimulation.weekIsOver.get()) {
+        while (!BarberShopSimulation.weekIsOver.get()) {
             try {
-                if(needToWork.get()) {
-                    if (queue.isEmpty()) {
+                if (needToWork.get()) {
+                    if (queue.isEmpty())
                         synchronized (this) {
                             wait();
                         }
-                    } else {
+                    else
                         hairCut();
-                    }
-                }
-                else {
-                    if(!queue.isEmpty())
+                } else {
+                    if (!queue.isEmpty())
                         hairCut();
                     else
                         synchronized (this) {
@@ -57,31 +55,31 @@ public class Barber implements Runnable {
     }
 
     private void hairCut() {
-        int randomTime = ThreadLocalRandom.current().nextInt(BarberShopSimulation.MIN_HAIRCUT_TIME,
-                                                             BarberShopSimulation.MAX_HAIRCUT_TIME);
+        int randomTime = ThreadLocalRandom.current()
+                .nextInt(BarberShopSimulation.MIN_HAIRCUT_TIME,
+                        BarberShopSimulation.MAX_HAIRCUT_TIME);
         Customer currentCustomer;
         try {
             long endWaitingTime = System.currentTimeMillis();
             currentCustomer = queue.poll(100, TimeUnit.MILLISECONDS);
             Thread.sleep(randomTime);
-            System.out.println("[BARBER]Customer get a haircut (" + randomTime +
-                                "ms) from the queue, remaining: " + (queue.size()));
-            allWaitingTime.addAndGet(endWaitingTime - currentCustomer.startWaitingTime);
+            System.out.println("[BARBER] Customer got a haircut in " + randomTime +
+                    " ms, remaining customers: " + (queue.size()));
+            allWaitingTime.addAndGet(endWaitingTime - currentCustomer.startWaitingInQueueTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     private void getStatistics() {
-        averageWaitingTime = allWaitingTime.get() /
-                (servedCustomers.get() + overCapacityCustomers.get() + closedBarberCustomers.get());
+        averageWaitingTime = allWaitingTime.get() / servedCustomers.get();
 
         System.out.format("\r\n|| ---------- WEEKLY STATS ---------- ||\r\n" +
-                        "[%d] customers were served\r\n" +
-                        "[%d] customers left due to lack of chairs\r\n" +
-                        "[%d] customers left due to closing hours\r\n" +
-                        "[%d] ms was the average waiting time\r\n",
-                        servedCustomers.get(), overCapacityCustomers.get(),
-                        closedBarberCustomers.get(), averageWaitingTime);
+                "[%d] customers were served\r\n" +
+                "[%d] customers left due to lack of chairs\r\n" +
+                "[%d] customers left due to closing hours\r\n" +
+                "[%d] ms was the average waiting time in the queue\r\n",
+                servedCustomers.get(), overCapacityCustomers.get(),
+                closedBarberCustomers.get(), averageWaitingTime);
     }
 }
